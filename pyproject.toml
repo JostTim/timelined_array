@@ -1,0 +1,20 @@
+[project]
+name = "timelined_array"
+description = "Manage easily 1 or multidimensionnal samples numpy arrays that are time related. Extends numpy without removing any of it's abilities on such arrays."
+authors = [{ name = "Timothe Jost", email = "timothe.jost@wanadoo.fr" }]
+dependencies = ["numpy"]
+requires-python = ">=3.11"
+readme = "README.md"
+license = { text = "MIT" }
+dynamic = ["version"]
+
+[build-system]
+requires = ["pdm-backend"]
+build-backend = "pdm.backend"
+
+[tool.pdm]
+distribution = true
+
+[tool.pdm.version]
+source = "file"
+path = "src/timelined_array/__init__.py"

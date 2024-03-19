@@ -354,3 +354,17 @@ class TimelinedArray(np.ndarray):
         """
 
         return self.isec[start:][:element_nb]
+
+
+class Seconds(float):
+    def to_index(self, fs):
+        """_summary_
+
+        Args:
+            fs (float or int): Sampling frequency in Hertz (samples per second)
+
+        Returns:
+            int: The samples index that this second corresponds to,
+                (if sample 0 is at 0 second) in an uniformly spaced time array.
+        """
+        return int(self * fs)

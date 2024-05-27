@@ -1,3 +1,3 @@
-__version__ = "0.0.3"
+__version__ = "0.0.4"
 
-from .time import TimelinedArray, MaskedTimelinedArray, Seconds
+from .time import TimelinedArray, MaskedTimelinedArray, Seconds, Boundary

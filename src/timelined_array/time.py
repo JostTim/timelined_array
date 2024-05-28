@@ -1007,7 +1007,10 @@ class TimeMixin:
             # +1 (a.k.a. shifted one dimension deeper)
 
             for element in data:
-                time_dimension = getattr(element, "time_dimension", None) + 1
+                time_dimension = getattr(element, "time_dimension", None)
+                if time_dimension is None:
+                    break
+                time_dimension = time_dimension + 1
                 _unpacking = True
                 break
             else:

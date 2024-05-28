@@ -21,7 +21,7 @@ class TimeCompatibleProtocol(Protocol):
     def __array__(self) -> np.ndarray: ...
 
     @property
-    def shape(self) -> Tuple[int]: ...
+    def shape(self) -> Tuple[int, ...]: ...
 
     @property
     def ndim(self) -> int: ...
@@ -347,11 +347,11 @@ class TimeMixin:
     time_dimension: int
     timeline: Timeline
 
-    def _time_dimension_in_axis(self, axis: int | Tuple[int] | None) -> bool:
+    def _time_dimension_in_axis(self, axis: int | Tuple[int, ...] | None) -> bool:
         """Check if the time dimension is present in the specified axis.
 
         Args:
-            axis (int | Tuple[int] | None): The axis to check for the time dimension.
+            axis (int | Tuple[int, ...] | None): The axis to check for the time dimension.
 
         Returns:
             bool: True if the time dimension is present in the axis, False otherwise.
@@ -502,11 +502,11 @@ class TimeMixin:
 
         return index, final_timeline, final_time_dimension
 
-    def _get_indexed_times(self, index: int | Tuple[int] | slice | Tuple[slice] | List | np.ndarray):
+    def _get_indexed_times(self, index: int | Tuple[int, ...] | slice | Tuple[slice] | List | np.ndarray):
         """Get indexed times based on the provided index.
 
         Args:
-            index (int | Tuple[int] | slice | Tuple[slice] | List | np.ndarray): The index to retrieve times from.
+            index (int | Tuple[int, ...] | slice | Tuple[slice] | List | np.ndarray): The index to retrieve times from.
 
         Returns:
             np.ndarray: The indexed times based on the provided index.
@@ -531,12 +531,12 @@ class TimeMixin:
 
         return obj.shape == ()
 
-    def _finish_axis_removing_operation(self, result: TimeCompatibleProtocol, axis: int | Tuple[int] | None):
+    def _finish_axis_removing_operation(self, result: TimeCompatibleProtocol, axis: int | Tuple[int, ...] | None):
         """Finish axis removing operation.
 
         Args:
             result (TimeCompatibleProtocol): The result of the operation.
-            axis (int | Tuple[int] | None): The axis or axes to remove.
+            axis (int | Tuple[int, ...] | None): The axis or axes to remove.
 
         Returns:
             TimeCompatibleProtocol: The result after finishing the axis removing operation.
@@ -544,7 +544,7 @@ class TimeMixin:
 
         if not isinstance(result, np.ndarray):
             return result
-        if not self._is_single_element(result):
+        if self._is_single_element(result):
             return result.item()
         if self._time_dimension_in_axis(axis):
             return np.asarray(result)
@@ -641,6 +641,40 @@ class TimeMixin:
 
         return self.itime[start:][:element_nb]  # type: ignore
 
+    def shift_values(
+        self,
+        period: int | Tuple[int, ...] | slice | Tuple[slice, ...] | List | np.ndarray = 0,
+        axis=None,
+        time_period=True,
+    ):
+        """Shifts the values of the array along the specified axis by the given period.
+
+        Args:
+            period (int): The period by which to shift the values.
+            axis (int, optional): The axis along which to shift the values. Defaults to None.
+            time_period (bool, optional): If True, the shift is applied based on time. Defaults to True.
+
+        Returns:
+            numpy.ndarray: The array with shifted values.
+        """
+
+        if axis is None:
+            axis = self.time_dimension
+
+        indexer = []
+        for dim in range(len(self.shape)):
+            if dim == axis:
+                # make a new axis to account fo the axis loss of the .mean later
+                indexer.append(np.newaxis)
+            else:
+                # select all with slice(None) equivalent to ":"
+                indexer.append(slice(None))
+        indexer = tuple(indexer)
+
+        shift_area = self.itime.__getitem__(period) if time_period else self.__getitem__(period)
+
+        return self - np.repeat(shift_area.mean(axis=axis).__getitem__(tuple(indexer)), self.shape[axis], axis=axis)
+
     def swapaxes(self: TimeCompatibleProtocol, axis1: int, axis2: int):
         """Swap the two specified axes of the TimelinedArray.
 
@@ -701,12 +735,12 @@ class TimeMixin:
 
         return self.transpose()
 
-    def moveaxis(self: TimeCompatibleProtocol, source: int | Tuple[int], destination: int | Tuple[int]):
+    def moveaxis(self: TimeCompatibleProtocol, source: int | Tuple[int, ...], destination: int | Tuple[int, ...]):
         """Move the axis of the array to new positions.
 
         Args:
-            source (int or Tuple[int]): The source position(s) of the axis to move.
-            destination (int or Tuple[int]): The destination position(s) to move the axis to.
+            source (int or Tuple[int, ...]): The source position(s) of the axis to move.
+            destination (int or Tuple[int, ...]): The destination position(s) to move the axis to.
 
         Returns:
             TimeCompatibleProtocol: A new array with the axis moved to the specified destination.
@@ -777,11 +811,14 @@ class TimeMixin:
         # TimelinedArray.time_dimension and TimelinedArray.timeline are set. good to go
         return rolled_array
 
-    def mean(self: TimeCompatibleProtocol, axis: int | Tuple[int] | None = None, dtype=None, out=None, keepdims=False):
+    def mean(
+        self: TimeCompatibleProtocol, axis: int | Tuple[int, ...] | None = None, dtype=None, out=None, keepdims=False
+    ):
         """Calculates the mean along the specified axis.
 
         Args:
-            axis (int | Tuple[int] | None): Axis or axes along which to perform the mean operation. Default is None.
+            axis (int | Tuple[int, ...] | None): Axis or axes along which to perform the mean operation.
+                Default is None.
             dtype: Data-type to use in the computation.
             out: Output array where the result is stored.
             keepdims (bool): If True, the reduced dimensions are retained in the output array.
@@ -794,11 +831,13 @@ class TimeMixin:
         return self._finish_axis_removing_operation(result, axis)
 
     # Override other reduction methods similarly if needed
-    def sum(self: TimeCompatibleProtocol, axis: int | Tuple[int] | None = None, dtype=None, out=None, keepdims=False):
+    def sum(
+        self: TimeCompatibleProtocol, axis: int | Tuple[int, ...] | None = None, dtype=None, out=None, keepdims=False
+    ):
         """Calculate the sum along the specified axis.
 
         Args:
-            axis (int | Tuple[int] | None): Axis or axes along which a sum is performed.
+            axis (int | Tuple[int, ...] | None): Axis or axes along which a sum is performed.
                 The default is to sum over all the dimensions of the input array.
             dtype: The type of the returned array and of the accumulator in which the elements are summed.
                 If dtype is not specified, it defaults to the dtype of a, unless a has an integer dtype
@@ -818,12 +857,17 @@ class TimeMixin:
         return self._finish_axis_removing_operation(result, axis)
 
     def std(
-        self: TimeCompatibleProtocol, axis: int | Tuple[int] | None = None, dtype=None, out=None, ddof=0, keepdims=False
+        self: TimeCompatibleProtocol,
+        axis: int | Tuple[int, ...] | None = None,
+        dtype=None,
+        out=None,
+        ddof=0,
+        keepdims=False,
     ):
         """Calculate the standard deviation along the specified axis.
 
         Args:
-            axis (int or Tuple[int] or None): Axis or axes along which the standard deviation is computed.
+            axis (int or Tuple[int, ...] or None): Axis or axes along which the standard deviation is computed.
                 The default is to compute the standard deviation of the flattened array.
             dtype: Data-type of the result. If not provided, the data-type of the input is used.
             out: Output array with the same shape as input array, placed with the result.
@@ -841,13 +885,18 @@ class TimeMixin:
         return self._finish_axis_removing_operation(result, axis)
 
     def var(
-        self: TimeCompatibleProtocol, axis: int | Tuple[int] | None = None, dtype=None, out=None, ddof=0, keepdims=False
+        self: TimeCompatibleProtocol,
+        axis: int | Tuple[int, ...] | None = None,
+        dtype=None,
+        out=None,
+        ddof=0,
+        keepdims=False,
     ):
         """Calculate the variance along the specified axis.
 
         Args:
             self (TimeCompatibleProtocol): The input data.
-            axis (int | Tuple[int] | None): Axis or axes along which the variance is computed.
+            axis (int | Tuple[int, ...] | None): Axis or axes along which the variance is computed.
                 The default is to compute the variance of the flattened array.
             dtype: Data-type of the result. If not provided, the data-type of the input is used.
             out: Alternative output array in which to place the result.
@@ -1114,12 +1163,12 @@ class TimelinedArray(TimeMixin, np.ndarray, TimeCompatibleProtocol):
         return super().__array_function__(func, types, args, kwargs)
 
     def __getitem__(
-        self, index: int | Tuple[int] | slice | Tuple[slice] | List | np.ndarray
+        self, index: int | Tuple[int, ...] | slice | Tuple[slice, ...] | List | np.ndarray
     ) -> "TimelinedArray | np.ndarray":
         """Get item from TimelinedArray based on index or slice.
 
         Args:
-            index (int | Tuple[int] | slice | Tuple[slice] | List | np.ndarray): Index or slice to retrieve item.
+            index (int | Tuple[int, ...] | slice | Tuple[slice] | List | np.ndarray): Index or slice to retrieve item.
 
         Returns:
             TimelinedArray | np.ndarray: Indexed result based on the provided index.
@@ -1145,13 +1194,14 @@ class TimelinedArray(TimeMixin, np.ndarray, TimeCompatibleProtocol):
     def __repr__(self):
         """Return a string representation of the object with the class name and the array representation."""
 
-        return type(self).__name__ + np.array(self).__repr__()[5:]
+        # [5:] serves to remove the 'array' part for the original array repr string
+        return type(self).__name__ + np.asarray(self).__repr__()[5:]
 
     def __str__(self):
         """Return a string representation of the object by concatenating the class name with the string
         representation of the object as a NumPy array."""
 
-        return type(self).__name__ + np.array(self).__str__()
+        return type(self).__name__ + np.asarray(self).__str__()
 
     @staticmethod
     def align_from_iterable(iterable) -> "TimelinedArray":
@@ -1249,12 +1299,12 @@ class MaskedTimelinedArray(TimeMixin, np.ma.MaskedArray, TimeCompatibleProtocol)
         self.time_dimension = getattr(obj, "time_dimension", 0)
 
     def __getitem__(
-        self, index: int | Tuple[int] | slice | Tuple[slice] | List | np.ndarray
+        self, index: int | Tuple[int, ...] | slice | Tuple[slice] | List | np.ndarray
     ) -> "MaskedTimelinedArray | np.ma.MaskedArray":
         """Get item from the MaskedTimelinedArray based on the provided index.
 
         Args:
-            index (int | Tuple[int] | slice | Tuple[slice] | List | np.ndarray): The index or slice to retrieve.
+            index (int | Tuple[int, ...] | slice | Tuple[slice] | List | np.ndarray): The index or slice to retrieve.
 
         Returns:
             MaskedTimelinedArray | np.ma.MaskedArray: The masked array or MaskedTimelinedArray based on the index.

@@ -17,7 +17,7 @@ A class that provides methods for converting time values to array indices and fo
 A mixin class that adds time-related methods and properties to arrays, including methods for aligning, transposing, and moving axes.
 
 ### TimePacker
-A class for packing arrays with their associated timelines. Usefull to plot data fast to matplotlib.
+A class for packing arrays with their associated timelines. Mostly usefull to plot data fast to matplotlib in case of 1D TimelinedArrays (x and y are unpacked directly from Timeline and the array, into `plt.plot` using `plt.plot(*time_arrray.pack)` )
 
 ### TimelinedArray
 A subclass of np.ndarray that includes a timeline and a time dimension. It provides methods for time-based indexing and operations.

@@ -33,8 +33,6 @@ class TimeCompatibleProtocol(Protocol):
 
     def transpose(self): ...
 
-    def _finish_axis_removing_operation(self, result, axis): ...
-
 
 class Timeline(np.ndarray):
     _step = None
@@ -502,7 +500,7 @@ class TimeMixin:
 
         return index, final_timeline, final_time_dimension
 
-    def _get_indexed_times(self, index: int | Tuple[int, ...] | slice | Tuple[slice] | List | np.ndarray):
+    def _get_indexed_times(self, index: int | Tuple[int, ...] | slice | Tuple[slice, ...] | List | np.ndarray):
         """Get indexed times based on the provided index.
 
         Args:
@@ -531,7 +529,9 @@ class TimeMixin:
 
         return obj.shape == ()
 
-    def _finish_axis_removing_operation(self, result: TimeCompatibleProtocol, axis: int | Tuple[int, ...] | None):
+    def _finish_axis_removing_operation(
+        self, result: "TimelinedArray| MaskedTimelinedArray | np.ndarray | int | float", axis: int | Tuple[int, ...]
+    ) -> "TimelinedArray| MaskedTimelinedArray | np.ndarray | int | float":
         """Finish axis removing operation.
 
         Args:
@@ -673,7 +673,11 @@ class TimeMixin:
 
         shift_area = self.itime.__getitem__(period) if time_period else self.__getitem__(period)
 
-        return self - np.repeat(shift_area.mean(axis=axis).__getitem__(tuple(indexer)), self.shape[axis], axis=axis)
+        # if not this : we lost a dimension because we sliced one axis to a single element, no need to no .mean
+        if not len(shift_area.shape) < len(self.shape):
+            shift_area = shift_area.mean(axis=axis)
+
+        return self - np.repeat(shift_area.__getitem__(tuple(indexer)), self.shape[axis], axis=axis)
 
     def swapaxes(self: TimeCompatibleProtocol, axis1: int, axis2: int):
         """Swap the two specified axes of the TimelinedArray.

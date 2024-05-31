@@ -182,8 +182,8 @@ class TimeIndexer:
         self.set_edge_policy(start, stop)
 
     def set_edge_policy(self, start="inclusive", stop="exclusive"):
-        self._start_operation = EdgePolicy["start"].value[start]
-        self._stop_operation = EdgePolicy["stop"].value[stop]
+        self._start_operation = EdgePolicy["start"].value[start].value
+        self._stop_operation = EdgePolicy["stop"].value[stop].value
         return self
 
     def time_to_index(

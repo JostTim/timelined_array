@@ -74,7 +74,7 @@ data_at_time = timelined_array.itime[5.0:9.0]
 
 (Exclusion / Inclusion handling for start and stop are planned to be tuneable in the future, with a syntax close to :)
 ```python
-data_at_time = timelined_array.itime(start:"exclude")[5.0:9.0]
+data_at_time = timelined_array.itime(start="exclude")[5.0:9.0]
  ```
 And exclusion settings set at the level of the array for all future usage might also be implemented. (need to be passed down to child arrays too, wich would imply some reworking of the pickling handling)
 

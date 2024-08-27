@@ -1206,7 +1206,7 @@ class TimelinedArray(TimeMixin, np.ndarray, TimeCompatibleProtocol):
             TimelinedArray: A new TimelinedArray object containing aligned arrays.
         """
 
-        start = min([item.timeline.min() for item in iterable])
+        start = max([item.timeline.min() for item in iterable])
         maxlen = min([len(item.isec[start:]) for item in iterable])
 
         aligned_arrays = []

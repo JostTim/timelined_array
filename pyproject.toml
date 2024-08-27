@@ -8,6 +8,10 @@ readme = "README.md"
 license = { text = "MIT" }
 dynamic = ["version"]
 
+[project.urls]
+"Homepage" = "https://pypi.org/project/timelined_array/"
+"Source" = "https://github.com/JostTim/timelined_array"
+
 [build-system]
 requires = ["pdm-backend"]
 build-backend = "pdm.backend"

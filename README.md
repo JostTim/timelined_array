@@ -1,5 +1,9 @@
 # timelined_array
 
+![Publish Status](https://github.com/JostTim/timelined_array/actions/workflows/publish.yml/badge.svg)
+![Test Status](https://github.com/JostTim/timelined_array/actions/workflows/test.yml/badge.svg)
+[![codecov](https://codecov.io/gh/JostTim/timelined_array/branch/main/graph/badge.svg)](https://codecov.io/gh/JostTim/timelined_array)
+
 ## Overview
 The TimelinedArray package provides a set of classes and utilities for working with time-indexed arrays. It extends the functionality of NumPy arrays to include time-based indexing and operations, making it easier to work with time-series data.
 

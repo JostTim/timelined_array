@@ -260,7 +260,8 @@ class TimeIndexer:
         iindex_time = self.time_to_index(index)
         full_iindex = self._insert_time_index(iindex_time)
         # print("new full index : ",iindex_time)
-        logger.debug(f"About to index over time with iindex_time {iindex_time} and full_iindex {full_iindex}")
+        logger.debug(
+            f"About to index over time with iindex_time {iindex_time} and full_iindex {full_iindex}")
         return self.array[full_iindex]
 
     def get_iindex(self, sec_start=None, sec_stop=None, sec_step=None):
@@ -370,7 +371,8 @@ class TimeMixin:
             if axis < self.time_dimension:
                 final_time_dimension -= 1
             elif axis == self.time_dimension:
-                raise ValueError("The time dimension would simply be discarded after axis removal")
+                raise ValueError(
+                    "The time dimension would simply be discarded after axis removal")
 
         return final_time_dimension
 
@@ -480,7 +482,8 @@ class TimeMixin:
         # we apply this reshaping to timeline too.
 
         final_timeline = (
-            self.timeline[index[time_dimension_in_index]] if len(index) > time_dimension_in_index else self.timeline
+            self.timeline[index[time_dimension_in_index]] if len(
+                index) > time_dimension_in_index else self.timeline
         )
 
         return index, final_timeline, final_time_dimension
@@ -533,7 +536,8 @@ class TimeMixin:
             return result.item()
         if self._time_dimension_in_axis(axis):
             return np.asarray(result)
-        result.time_dimension = self._get_time_dimension_after_axis_removal(axis)
+        result.time_dimension = self._get_time_dimension_after_axis_removal(
+            axis)
         return result
 
     # # REDUCE and SETSTATE are used to instanciate the array from and to a pickled serialized object.
@@ -545,7 +549,8 @@ class TimeMixin:
         # Get the parent's __reduce__ tuple
         pickled_state = super().__reduce__()
         # Create our own tuple to pass to __setstate__
-        new_state = pickled_state[2] + (self.timeline, self.time_dimension)  # type: ignore
+        # type: ignore
+        new_state = pickled_state[2] + (self.timeline, self.time_dimension)
 
         # self.logger.debug(f"Reduced to : time_dimension={self.time_dimension}. Array shape is : {new_state}")
         # Return a tuple that replaces the parent's __setstate__ tuple with our own
@@ -656,7 +661,8 @@ class TimeMixin:
                 indexer.append(slice(None))
         indexer = tuple(indexer)
 
-        shift_area = self.itime.__getitem__(period) if time_period else self.__getitem__(period)
+        shift_area = self.itime.__getitem__(
+            period) if time_period else self.__getitem__(period)
 
         # if not this : we lost a dimension because we sliced one axis to a single element, no need to no .mean
         if not len(shift_area.shape) < len(self.shape):
@@ -678,7 +684,8 @@ class TimeMixin:
         # we re-instanciate a TimelinedArray with view instead of the full constructor : faster
         cls = self._get_array_cls()
 
-        swapped_array: TimeCompatibleProtocol = np.swapaxes(np.asarray(self), axis1, axis2).view(cls)  # type: ignore
+        swapped_array: TimeCompatibleProtocol = np.swapaxes(
+            np.asarray(self), axis1, axis2).view(cls)  # type: ignore
         swapped_array.timeline = self.timeline
 
         if axis1 == self.time_dimension:
@@ -707,7 +714,8 @@ class TimeMixin:
         cls = self._get_array_cls()
 
         # we re-instanciate a TimelinedArray with view instead of the full constructor : faster
-        transposed_array: TimeCompatibleProtocol = np.transpose(np.asarray(self), axes).view(cls)  # type: ignore
+        transposed_array: TimeCompatibleProtocol = np.transpose(
+            np.asarray(self), axes).view(cls)  # type: ignore
         transposed_array.timeline = self.timeline
 
         if self.time_dimension in axes:
@@ -780,24 +788,36 @@ class TimeMixin:
         # we re-instanciate a TimelinedArray with view instead of the full constructor : faster
         cls = self._get_array_cls()
 
-        rolled_array: TimeCompatibleProtocol = np.rollaxis(np.asarray(self), axis, start).view(cls)  # type: ignore
+        rolled_array: TimeCompatibleProtocol = np.rollaxis(
+            np.asarray(self), axis, start).view(cls)  # type: ignore
+
+        # reinject timeline as is
         rolled_array.timeline = self.timeline
-        rolled_array.time_dimension = self.time_dimension
 
-        if axis < self.time_dimension:
-            if start <= axis:
-                rolled_array.time_dimension += 1
-            elif start <= self.time_dimension:
-                rolled_array.time_dimension -= 1
-        elif axis == self.time_dimension:
-            rolled_array.time_dimension = start
-        else:
-            if start <= self.time_dimension:
-                rolled_array.time_dimension -= 1
-            elif start > self.time_dimension:
-                rolled_array.time_dimension += 1
+        # then fix the time_position according to the rolled axis
 
-        # TimelinedArray.time_dimension and TimelinedArray.timeline are set. good to go
+        def rollaxis_mapping(shape, axis, start=0):
+            n = len(shape)
+            if axis < 0:
+                axis += n
+            if start < 0:
+                start += n
+            if not (0 <= axis < n and 0 <= start <= n):
+                raise ValueError("axis and start must be within valid range")
+            new_order = list(range(n))
+
+            axis_value = new_order.pop(axis)
+
+            if start > axis:
+                new_order.insert(start - 1, axis_value)
+            else:
+                new_order.insert(start, axis_value)
+            mapping = {i: new_order.index(i) for i in range(n)}
+            return mapping
+
+        rolled_array.time_dimension = rollaxis_mapping(
+            self.shape, axis, start)[self.time_dimension]
+
         return rolled_array
 
     def mean(
@@ -915,7 +935,8 @@ class TimeMixin:
         # returns a modified version of the array, with the first element of the array to time zero,
         # and shift the rest accordingly
         cls = self._get_array_cls()
-        return cls(self, timeline=self.timeline - self.timeline[at])  # type: ignore
+        # type: ignore
+        return cls(self, timeline=self.timeline - self.timeline[at])
 
     def offset_timeline(self, offset):
         """Returns a modified version of the array with time offset.
@@ -983,7 +1004,8 @@ class TimeMixin:
                 break
 
         if timeline is None:
-            raise ValueError("timeline must be supplied if the input_array is not a TimelinedArray")
+            raise ValueError(
+                "timeline must be supplied if the input_array is not a TimelinedArray")
 
         if time_dimension is None:  # same thing for the time dimension.
             time_dimension = getattr(data, "time_dimension", None)
@@ -1134,7 +1156,8 @@ class TimelinedArray(TimeMixin, np.ndarray, TimeCompatibleProtocol):
             logger.debug(f"wrapping array after ufunc {context[0].__name__}")
         output = super().__array_wrap__(out_arr, context)
         if len(output.shape) < len(self.shape):
-            logger.debug(f"shape reduced from : {self.shape} to : {output.shape}. outarray was : {out_arr.shape}")
+            logger.debug(
+                f"shape reduced from : {self.shape} to : {output.shape}. outarray was : {out_arr.shape}")
         return output
 
     def __array_function__(self, func, types, args, kwargs):
@@ -1166,7 +1189,8 @@ class TimelinedArray(TimeMixin, np.ndarray, TimeCompatibleProtocol):
             TimelinedArray | np.ndarray: Indexed result based on the provided index.
         """
 
-        index, final_timeline, final_time_dimension = self._get_indexed_times(index)
+        index, final_timeline, final_time_dimension = self._get_indexed_times(
+            index)
 
         if final_timeline is None or final_time_dimension is None:
             return np.asarray(self).__getitem__(index)
@@ -1302,7 +1326,8 @@ class MaskedTimelinedArray(TimeMixin, np.ma.MaskedArray, TimeCompatibleProtocol)
             MaskedTimelinedArray | np.ma.MaskedArray: The masked array or MaskedTimelinedArray based on the index.
         """
 
-        index, final_timeline, final_time_dimension = self._get_indexed_times(index)
+        index, final_timeline, final_time_dimension = self._get_indexed_times(
+            index)
 
         if final_timeline is None or final_time_dimension is None:
             return np.ma.MaskedArray(data=np.asarray(self), mask=self.mask, fill_value=self.fill_value).__getitem__(

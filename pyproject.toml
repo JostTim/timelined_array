@@ -24,11 +24,8 @@ source = "file"
 path = "src/timelined_array/__init__.py"
 
 [tool.pdm.dev-dependencies]
-dev = [
-    "pytest>=8.3.2",
-    "pytest-cov>=5.0.0",
-]
+dev = ["pytest>=8.3.2", "pytest-cov>=5.0.0"]
 
 [tool.pytest.ini_options]
-addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb --cov-report html --cov --junitxml=pytest_results.xml"
+addopts = "--pdbcls=IPython.terminal.debugger:TerminalPdb --cov-report xml --cov --junitxml=pytest_results.xml"
 testpaths = ["tests"]

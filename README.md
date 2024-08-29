@@ -1,8 +1,12 @@
 # timelined_array
 
+![Python](https://img.shields.io/badge/python-3.11-blue.svg)
+[![PyPI version](https://badge.fury.io/py/timelined_array.svg)](https://badge.fury.io/py/timelined_array)
 ![Publish Status](https://github.com/JostTim/timelined_array/actions/workflows/publish.yml/badge.svg)
 ![Test Status](https://github.com/JostTim/timelined_array/actions/workflows/test.yml/badge.svg)
 [![codecov](https://codecov.io/gh/JostTim/timelined_array/branch/main/graph/badge.svg)](https://codecov.io/gh/JostTim/timelined_array)
+
+<!-- eventually, add ?cache-bust=1 to badges url above, and update the value of cache-bust randomly at git commits (or based on the commit name) so that we always see the latest badge produced, and not the cached badge in the browser.-->
 
 ## Overview
 The TimelinedArray package provides a set of classes and utilities for working with time-indexed arrays. It extends the functionality of NumPy arrays to include time-based indexing and operations, making it easier to work with time-series data.

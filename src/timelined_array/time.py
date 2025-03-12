@@ -1152,7 +1152,12 @@ class TimelinedArray(BaseTimeArray):
         self.timeline = getattr(obj, "timeline", Timeline([]))
         self.time_dimension = getattr(obj, "time_dimension", 0)
 
-    def __array_wrap__(self, out_arr, context=None):
+    def __array_wrap__(
+        self,
+        out_arr,
+        context=None,
+        return_scalar=False,
+    ):
         """Wrap the output array after a ufunc operation.
 
         Args:
@@ -1169,7 +1174,7 @@ class TimelinedArray(BaseTimeArray):
 
         if context is not None:
             logger.debug(f"wrapping array after ufunc {context[0].__name__}")
-        output = super().__array_wrap__(out_arr, context)
+        output = super().__array_wrap__(out_arr, context, return_scalar)
         if len(output.shape) < len(self.shape):
             logger.debug(f"shape reduced from : {self.shape} to : {output.shape}. outarray was : {out_arr.shape}")
         return output

@@ -4,7 +4,7 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/timelined_array)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/JostTim/timelined_array/publish.yml?label=Publishing)
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/JostTim/timelined_array/test.yml?label=Testing)
-![Codecov](https://img.shields.io/codecov/c/github/JostTim/timelined_array)
+[![Codecov](https://img.shields.io/codecov/c/github/JostTim/timelined_array)](https://codecov.io/gh/JostTim/timelined_array)
 
 
 <!-- eventually, add ?cache-bust=1 to badges url above, and update the value of cache-bust randomly at git commits (or based on the commit name) so that we always see the latest badge produced, and not the cached badge in the browser.-->

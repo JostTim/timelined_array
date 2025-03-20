@@ -26,11 +26,50 @@ def timelined_array_3D():
 
 
 @pytest.fixture
+def masked_timelined_array_1D():
+    data = np.random.rand(50)
+    mask = data > 0.5
+    return MaskedTimelinedArray(data, mask=mask, timeline=np.arange(50), time_dimension=0)
+
+
+@pytest.fixture
 def pickle_path():
     file_path = Path("serialized_test_3D_ta_array.pickle")
     yield file_path
     if file_path.exists():
         file_path.unlink(missing_ok=True)
+
+
+def test_timelined_array_1D_properties(timelined_array_1D):
+    assert timelined_array_1D.time_dimension == 0
+    assert timelined_array_1D.timeline.shape == (50,)
+
+
+def test_timelined_array_3D_properties(timelined_array_3D):
+    assert timelined_array_3D.time_dimension == 1
+    assert timelined_array_3D.timeline.shape == (50,)
+
+
+def test_masked_timelined_array_1D_properties(masked_timelined_array_1D):
+    assert masked_timelined_array_1D.time_dimension == 0
+    assert np.all(masked_timelined_array_1D.mask == (masked_timelined_array_1D.data > 0.5))
+    assert masked_timelined_array_1D.timeline.shape == (50,)
+
+
+def test_timelined_array_indexing(timelined_array_1D):
+    sub_array = timelined_array_1D[10:20]
+    assert isinstance(sub_array, TimelinedArray)
+    assert sub_array.shape == (10,)
+    assert np.array_equal(sub_array.timeline, np.arange(10, 20))
+    assert timelined_array_1D[[1]] == timelined_array_1D[1]
+
+
+def test_masked_timelined_array_indexing(masked_timelined_array_1D):
+    sub_array = masked_timelined_array_1D[10:20]
+    assert isinstance(sub_array, MaskedTimelinedArray)
+    assert sub_array.shape == (10,)
+    assert np.array_equal(sub_array.timeline, np.arange(10, 20))
+    assert np.all(sub_array.mask == (sub_array.data > 0.5))
 
 
 def get_axis_parameters_3D():
@@ -54,10 +93,21 @@ def test_timeline_creation():
     assert isinstance(timeline, Timeline)
     assert timeline.max() == 9
     assert timeline.min() == 0
+    assert 5 in timeline
+    assert timeline.step == 1
 
     with pytest.raises(NotImplementedError):
         timeline = Timeline(np.random.rand(10), uniform_space=True)
     # assert np.unique(np.diff(timeline)).size == 1
+
+
+def test_timelined_array_creation(timelined_array_1D):
+
+    with pytest.raises(ValueError):
+        array = TimelinedArray(np.array(timelined_array_1D))
+
+    with pytest.raises(ValueError):
+        array = TimelinedArray(np.array(timelined_array_1D), time_dimension=5.5)
 
 
 def test_pickle_unpickle(timelined_array_3D, pickle_path):
@@ -76,13 +126,13 @@ def test_pickle_unpickle(timelined_array_3D, pickle_path):
 
 
 def test_start_boundary():
-    assert StartBoundary.inclusive.value(5, 5)
-    assert not StartBoundary.exclusive.value(5, 5)
+    assert StartBoundary.inclusive.value(5, 5)  # 5 is => than 5
+    assert not StartBoundary.exclusive.value(5, 5)  # 5 is not > than 5
 
 
 def test_stop_boundary():
-    assert StoptBoundary.inclusive.value(5, 5)
-    assert not StoptBoundary.exclusive.value(5, 5)
+    assert StoptBoundary.inclusive.value(5, 5)  # 5 is =< than 5
+    assert not StoptBoundary.exclusive.value(5, 5)  # 5 is not < than 5
 
 
 def test_edge_policy():
@@ -105,6 +155,10 @@ def test_ta_transpose(timelined_array_3D):
     transposed = timelined_array_3D.transpose(2, 0, 1)
     assert transposed.shape == (75, 25, 50)
     assert transposed.time_dimension == 2
+
+    transposed = timelined_array_3D.T
+    assert transposed.shape == (75, 50, 25)
+    assert transposed.time_dimension == 1
 
 
 def test_ta_swapaxes(timelined_array_3D):
@@ -171,3 +225,43 @@ def test_masked_ta_creation():
 def test_seconds_to_index():
     sec = Seconds(10)
     assert sec.to_index(2) == 20
+
+
+def test_timelined_array_from_iterable(timelined_array_3D):
+    array = TimelinedArray.align_from_iterable(timelined_array_3D)
+    assert np.all(array == timelined_array_3D)
+
+
+def test_rebase_timelined_array(timelined_array_1D):
+
+    array = timelined_array_1D.rebase_timeline(at=16)
+    assert array.timeline[16] == 0
+
+
+def test_offset_timeline(timelined_array_1D):
+    array = timelined_array_1D.offset_timeline(offset=84)
+    assert array.timeline[22] == (22 + 84)
+
+
+def test_shift_period(timelined_array_1D):
+
+    with pytest.raises(NotImplementedError):
+        array = timelined_array_1D.shift_values(period=slice(8, 10))
+
+
+def test_moveaxis(timelined_array_3D):
+
+    array = timelined_array_3D.moveaxis(1, 2)
+    assert array.time_dimension == 2
+    assert array.shape[2] == 50
+
+    array = timelined_array_3D.moveaxis(0, 2)
+    assert array.time_dimension == 0
+    assert array.shape[1] == 75
+
+
+def test_pack(timelined_array_1D):
+
+    timeline, array = timelined_array_1D.pack
+    assert timeline is timelined_array_1D.timeline
+    assert np.all(array == timelined_array_1D)

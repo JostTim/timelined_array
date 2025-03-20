@@ -523,7 +523,7 @@ class TimeMixin:
 
     def _finish_axis_removing_operation(
         self, result: "TimelinedArray| MaskedTimelinedArray | np.ndarray | int | float", axis: int | Tuple[int, ...]
-    ) -> "TimelinedArray| MaskedTimelinedArray | np.ndarray | int | float":
+    ) -> "TimelinedArray| MaskedTimelinedArray | np.ndarray | int | float | str":
         """Finish axis removing operation.
 
         Args:
@@ -1262,7 +1262,7 @@ class MaskedTimelinedArray(np.ma.MaskedArray, BaseTimeArray):
     def __new__(
         cls,
         data,
-        mask: NDArray[np.bool_] | np.bool_ | np.ma.MaskedArray = np.ma.nomask,
+        mask: NDArray[np.bool_] | np.bool_ | bool | np.ma.MaskedArray = np.ma.nomask,
         dtype=None,
         copy=False,
         fill_value=None,

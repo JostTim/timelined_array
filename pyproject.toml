@@ -4,7 +4,7 @@ description = "Manage easily 1 or multidimensionnal samples numpy arrays that ar
 authors = [
     { name = "Timothe Jost", email = "44769559+JostTim@users.noreply.github.com" },
 ]
-dependencies = ["numpy"]
+dependencies = ["numpy>=2"]
 requires-python = ">=3.11"
 readme = "README.md"
 license = { text = "MIT" }

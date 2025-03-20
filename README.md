@@ -1,10 +1,11 @@
 # timelined_array
 
-![Python](https://img.shields.io/badge/python-3.11-blue.svg)
-[![PyPI version](https://badge.fury.io/py/timelined_array.svg)](https://badge.fury.io/py/timelined_array)
-![Publish Status](https://github.com/JostTim/timelined_array/actions/workflows/publish.yml/badge.svg)
-![Test Status](https://github.com/JostTim/timelined_array/actions/workflows/test.yml/badge.svg)
-[![codecov](https://codecov.io/gh/JostTim/timelined_array/branch/main/graph/badge.svg)](https://codecov.io/gh/JostTim/timelined_array)
+![Python Version from PEP 621 TOML](https://img.shields.io/python/required-version-toml?tomlFilePath=https%3A%2F%2Fraw.githubusercontent.com%2FJostTim%2Ftimelined_array%2Frefs%2Fheads%2Fmain%2Fpyproject.toml)
+![PyPI - Version](https://img.shields.io/pypi/v/timelined_array)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/JostTim/timelined_array/publish.yml?label=Publishing)
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/JostTim/timelined_array/test.yml?label=Testing)
+![Codecov](https://img.shields.io/codecov/c/github/JostTim/timelined_array)
+
 
 <!-- eventually, add ?cache-bust=1 to badges url above, and update the value of cache-bust randomly at git commits (or based on the commit name) so that we always see the latest badge produced, and not the cached badge in the browser.-->
 

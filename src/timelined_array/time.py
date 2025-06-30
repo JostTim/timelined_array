@@ -7,7 +7,9 @@ import operator
 
 from numpy.typing import NDArray
 from types import MethodType
-from typing import Tuple, List, Protocol, Type, Callable, Any, Optional
+from typing import Tuple, List, Protocol, Type, Callable, Any, Optional, TypeVar, Sequence
+
+Tp = TypeVar("Tp", bound="TimelinedArray")
 
 OperatorType = Callable[[Any, Any], bool]
 
@@ -635,8 +637,10 @@ class BaseTimeArray(TimeMixin, np.ndarray):
         Returns:
             TimelinedArray: The synchronized and cut arrray.
         """
+        # this slice is to select the number of elements, on the time_dimension
+        slices = tuple(slice(None) if i != self.time_dimension else slice(None, element_nb) for i in range(self.ndim))
 
-        return self.itime[start:][:element_nb]  # type: ignore
+        return self.itime[start:][slices]  # type: ignore
 
     def shift_values(
         self,
@@ -829,7 +833,7 @@ class BaseTimeArray(TimeMixin, np.ndarray):
     def all_axes(self):
         return tuple([i for i in range(self.ndim)])
 
-    def mean(self, axis: int | Tuple[int, ...] | None = None, dtype=None, out=None, keepdims=False):
+    def mean(self: Tp, axis: int | Tuple[int, ...] | None = None, dtype=None, out=None, keepdims=False) -> Tp:
         """Calculates the mean along the specified axis.
 
         Args:
@@ -1238,7 +1242,7 @@ class TimelinedArray(BaseTimeArray):
         return type(self).__name__ + np.asarray(self).__str__()
 
     @staticmethod
-    def align_from_iterable(iterable) -> "TimelinedArray":
+    def align_from_iterable(iterable: "Sequence[TimelinedArray]") -> "TimelinedArray":
         """Aligns arrays from an iterable based on their timelines.
 
         Args:

@@ -20,4 +20,3 @@ def test_timeline_creation():
 
     with pytest.raises(ValueError):
         non_uniform_timeline.step
-        assert True

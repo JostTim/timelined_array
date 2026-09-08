@@ -11,8 +11,6 @@ from timelined_array import TimelinedArray
 def pickle_path(tmp_path: Path):
     file_path = tmp_path / "serialized_test_3D_ta_array.pickle"
     yield file_path
-    if file_path.exists():
-        file_path.unlink(missing_ok=True)
 
 
 def test_pickle_unpickle(timelined_array_3D: TimelinedArray, pickle_path):
@@ -30,3 +28,9 @@ def test_pickle_unpickle(timelined_array_3D: TimelinedArray, pickle_path):
         timelined_array_3D.timeline, unserialized_3D_array.timeline
     )
     assert timelined_array_3D.time_dimension == unserialized_3D_array.time_dimension
+
+
+def test_representation(timelined_array_3D: TimelinedArray):
+
+    assert str(timelined_array_3D).startswith("TimelinedArray")
+    assert timelined_array_3D.__repr__().startswith("TimelinedArray")

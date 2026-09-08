@@ -173,5 +173,5 @@ def test_timelined_array_from_iterable(timelined_array_3D: TimelinedArray):
     assert timelined_array_3D.timeline.min() == 0
     assert timelined_array_3D.timeline.max() == TIME_AXIS_SIZE_3D - 1
 
-    array = TimelinedArray.align_from_iterable(timelined_array_3D)
+    array = TimelinedArray.align_from_iterable(timelined_array_3D)  # ty: ignore[invalid-argument-type]
     assert np.all(array == timelined_array_3D)

@@ -3,7 +3,11 @@ import pytest
 
 from tests.conftest import (
     ARRAY_SHAPE_1D,
+    AX0_SIZE_3D,
+    AX1_SIZE_3D,
+    AX2_SIZE_3D,
     TIME_AXIS_1D,
+    TIME_AXIS_SIZE_1D,
 )
 from timelined_array import TimelinedArray
 from timelined_array.time import (
@@ -120,7 +124,7 @@ def test_iteration(timelined_array_3D: TimelinedArray):
     items = list(timelined_array_3D)
     assert len(items) == AX0_SIZE_3D
     for item in items:
-        assert item.shape == (AX1_SIZE_3D, AX2_SIZE_3D)
+        assert item.shape == (AX1_SIZE_3D, AX2_SIZE_3D)  # ty: ignore[unresolved-attribute]
         # time axis (1) becomes axis 0 of the item, timeline stays attached
         assert isinstance(item, TimelinedArray)
         assert item.time_dimension == 0

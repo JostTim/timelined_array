@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from collections.abc import Iterable
+from collections.abc import Iterable, Iterator
 from dataclasses import dataclass, replace
 from enum import Enum
 from logging import getLogger
@@ -26,7 +26,7 @@ type Scalar = int | float | complex | str | bytes | memoryview[int]
 test: np.ndarray = np.array([])
 
 
-class Timeline(np.ndarray[tuple[int], Any]):
+class Timeline(np.ndarray[tuple[int], np.dtype[np.float64]]):
     max_step_mult: float
 
     def __new__(
@@ -85,15 +85,26 @@ class Timeline(np.ndarray[tuple[int], Any]):
 
         return self.min() <= time_value <= self.max()
 
-    # def max(self):
-    #     """Return the maximum value in the iterable."""
+    # def __getitem__(
+    #     self: Self, index: slice | int | list | npt.NDArray
+    # ) -> Self | float:
+    #     result = super().__getitem__(index)
+    #     if not isinstance(result, np.ndarray):
+    #         return result
+    #     if result.size == 1:
+    #         return result.item()
+    #     return result.view(self.get_class())
 
-    #     return super().max().item()
+    # def __iter__(self) -> Iterator[float]:
+    #     yield from super().__iter__()
 
-    # def min(self):
-    #     """Return the minimum value in the tensor."""
+    def get_class(self: Self) -> type[Self]:
+        """Return the class of the Timeline.
 
-    #     return super().min().item()
+        Returns:
+            Timeline: the class of the timeline, or a child of that class
+        """
+        return self.__class__
 
     @classmethod
     def _uniformize(cls: type[Self], timeline: Iterable) -> Self:
@@ -162,17 +173,6 @@ class Timeline(np.ndarray[tuple[int], Any]):
         return not any(abs(self._diff) > self.max_step)
 
 
-# class OperatorType(Protocol):
-#     @overload
-#     def __call__(self, a: npt.NDArray, b: Any) -> npt.NDArray[np.bool]: ...
-
-#     @overload
-#     def __call__(self, a: Any, b: Any) -> bool: ...
-
-#     def __call__(self, a: Any, b: Any) -> bool | npt.NDArray[np.bool]: ...
-
-
-# type OperatorType = Callable[[Any, Any], bool]
 type EdgePolicyString = Literal["inclusive", "exclusive", "inc", "exc"]
 
 
@@ -444,13 +444,13 @@ class TimeAttributes:
         return output_array
 
 
-class CropManager:
+class IndexationManager:
     def __init__(self, array: "BaseTimeArray") -> None:
         self.array = array
 
     def apply_index_to_time_attrs(
         self,
-        time_axis_index: int | npt.NDArray | slice | None,
+        time_axis_index: int | npt.NDArray | list | slice | None,
         time_attrs: TimeAttributes,
     ) -> TimeAttributes:
         """This function applies the array indexing to the timeline. This function **assumes** that the
@@ -495,7 +495,7 @@ class CropManager:
 
     def tuple_indexing(
         self,
-        index: tuple[int | None | slice | npt.NDArray, ...],
+        index: tuple[int | None | slice | npt.NDArray | list, ...],
         time_attrs: TimeAttributes,
     ) -> TimeAttributes:
         # first, if there is newwaxes, we shift the time_dimension upwards
@@ -534,7 +534,7 @@ class CropManager:
         index: None
         | int
         | slice
-        | tuple[int | None | slice | npt.NDArray, ...]
+        | tuple[int | None | slice | npt.NDArray | list, ...]
         | list
         | npt.NDArray,
     ) -> TimeAttributes:
@@ -752,7 +752,7 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
 
     @classmethod
     def align_from_iterable(
-        cls: type[Self], iterable: Iterable["BaseTimeArray"]
+        cls: type[Self], iterable: "Iterable[BaseTimeArray]"
     ) -> Self:
         """Aligns arrays from an iterable based on their timelines.
 
@@ -769,13 +769,13 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
         aligned_arrays = [item.align_trace(start, maxlen) for item in iterable]
         return cls(aligned_arrays)
 
-    def max_time(self):  # was sec_max
+    def max_time(self) -> float:  # was sec_max
         """Return the second maximum time from the timeline."""
 
         # get maximum time
         return self.timeline.max()
 
-    def min_time(self):  # was sec_min
+    def min_time(self) -> float:  # was sec_min
         """Get the minimum time from the timeline."""
 
         # get minimum time
@@ -834,7 +834,7 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
         array: npt.NDArray,
     ) -> npt.NDArray: ...
 
-    def __array_finalize__(self, obj: NDArray | None):
+    def __array_finalize__(self, obj: NDArray | None) -> None:
         """Finalize the array with additional attributes.
 
         Args:
@@ -850,10 +850,11 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
         self.timeline = getattr(obj, "timeline", Timeline([]))
         self.time_dimension = getattr(obj, "time_dimension", 0)
 
-    def __reduce__(self):
+    def __reduce__(
+        self,
+    ) -> tuple[Any, Any, tuple[Any, Any, Any, Any, Any, Timeline, int]]:
         """Return a tuple to be used for pickling and unpickling the
         object with additional attributes 'timeline' and 'time_dimension'."""
-
         # Get the parent's __reduce__ tuple
         pickled_state: tuple[Any, Any, tuple] = super().__reduce__()  # type: ignore
         # Create our own tuple to pass to __setstate__
@@ -863,7 +864,9 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
         # Return a tuple that replaces the parent's __setstate__ tuple with our own
         return (pickled_state[0], pickled_state[1], new_state)
 
-    def __setstate__(self: Self, state):
+    def __setstate__(
+        self: Self, state: tuple[Any, Any, Any, Any, Any, Timeline, int]
+    ) -> None:
         """Set the state of the object using the provided state tuple.
 
         Args:
@@ -891,13 +894,13 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
 
     # __repr__ and __str__ ARE OVERRIDEN TO AVOID HORRIBLE PERFORMANCE WHEN PRINTING
     # DUE TO CUSTOM __GETITEM__ : PRE-CHECKS WITH RECURSIVE NATIVE NUMPY REPR
-    def __repr__(self):
+    def __repr__(self) -> str:
         """Return a string representation of the object with the class name and the array representation."""
 
         # [5:] serves to remove the 'array' part for the original array repr string
         return self.get_class_name() + self.__as_time_unaware__(self).__repr__()[5:]
 
-    def __str__(self):
+    def __str__(self) -> str:
         """Return a string representation of the object by concatenating the class name with the string
         representation of the object as a NumPy array."""
 
@@ -908,7 +911,7 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
         index: None
         | int
         | slice
-        | tuple[int | None | slice | npt.NDArray, ...]
+        | tuple[int | None | slice | npt.NDArray | list, ...]
         | list
         | npt.NDArray,
     ) -> Self | npt.NDArray:
@@ -921,16 +924,33 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
             TimelinedArray | np.ndarray: Indexed result based on the provided index.
         """
 
-        time_attrs = CropManager(self).manage(index)
+        time_attrs = IndexationManager(self).manage(index)
 
         if time_attrs.collapsed:
             result = self.__as_time_unaware__(self).__getitem__(index)
-            if isinstance(result, np.ndarray) and result.size == 1:
-                return result.item()
+            # if isinstance(result, np.ndarray) and result.size == 1:
+            #     return result.item()
             return result
 
         result = super().__getitem__(index)
         return time_attrs.apply_to_array(self.get_class(), result)
+
+    def __iter__(self: Self) -> Iterator[Self | npt.NDArray | Scalar]:
+        """Iterate over the first axis using numpy's C-level iterator,
+        instead of falling back to the (much slower) overloaded __getitem__.
+        The yielded sub-arrays keep a coherent timeline : as the first axis
+        is consumed, the time dimension moves one position up, and is dropped
+        (yielding plain arrays) when the time dimension is the iterated axis."""
+
+        for item in super().__iter__():
+            if self.time_dimension == 0:
+                if self.ndim > 1:
+                    yield np.asarray(item)
+                else:
+                    yield item
+            else:
+                item.time_dimension = self.time_dimension - 1
+                yield item
 
     def swapaxes(self: Self, axis1: int, axis2: int) -> Self:
         """Swap the two specified axes of the TimelinedArray.

@@ -32,6 +32,6 @@ ARRAY_SHAPE_1D = (TIME_AXIS_SIZE_1D,)
 def timelined_array_1D():
     return TimelinedArray(
         np.random.rand(TIME_AXIS_SIZE_1D),
-        timeline=np.arange(TIME_AXIS_SIZE_1D),
+        timeline=np.arange(TIME_AXIS_SIZE_1D, dtype=float),
         time_dimension=TIME_AXIS_1D,
     )

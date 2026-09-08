@@ -1,9 +1,8 @@
 import numpy as np
 import pytest
 
-from tests.conftest import AX0_SIZE_3D, AX1_SIZE_3D, AX2_SIZE_3D
-from timelined_array import TimelinedArray
-from timelined_array.time import BaseTimeArray
+from tests.conftest import AX0_SIZE_3D, AX1_SIZE_3D, AX2_SIZE_3D, TIME_AXIS_SIZE_1D
+from timelined_array import BaseTimeArray, Timeline, TimelinedArray
 
 
 @pytest.fixture
@@ -38,12 +37,33 @@ def test_normal_array_shape(standard_array_3D: np.ndarray):
     assert test.shape == ()
 
 
-def test_iteration(timelined_array_3D: TimelinedArray):
+def test_scalar_indexing_3D(timelined_array_3D: TimelinedArray):
+    normal_array = timelined_array_3D.__array__()
+
+    t_result = timelined_array_3D[0, 5, 0]
+    n_result = normal_array[0, 5, 0]
+    assert isinstance(t_result, float)
+    assert t_result == n_result
+
+
+def test_iteration_3D(timelined_array_3D: TimelinedArray):
     # iteration should behave like a plain numpy array (iterate over first axis)
-    items = list(timelined_array_3D)
-    assert len(items) == AX0_SIZE_3D
-    for item in items:
-        assert item.shape == (AX1_SIZE_3D, AX2_SIZE_3D)
+    assert len(timelined_array_3D) == AX0_SIZE_3D
+    for item in timelined_array_3D:
+        assert item.shape == (AX1_SIZE_3D, AX2_SIZE_3D)  # ty: ignore[unresolved-attribute]
+        assert isinstance(item, TimelinedArray)
+        assert item.time_dimension == 0
+        np.testing.assert_array_equal(item.timeline, timelined_array_3D.timeline)
+        for sub_item in item:
+            assert sub_item.shape == (AX2_SIZE_3D,)  # ty: ignore[unresolved-attribute]
+            assert not isinstance(sub_item, TimelinedArray)
+            assert not hasattr(sub_item, "timeline")
+
+
+def test_iteration_1D(timelined_array_1D: TimelinedArray):
+    assert len(timelined_array_1D) == TIME_AXIS_SIZE_1D
+    for item in timelined_array_1D:
+        assert isinstance(item, float)
 
 
 def test_scalar_indexing_first_axis(timelined_array_3D: TimelinedArray):
@@ -64,6 +84,15 @@ def test_boolean_array_indexing(timelined_array_3D: TimelinedArray):
     assert indexed_array.shape[1] == 6
     assert isinstance(indexed_array, BaseTimeArray)
     assert indexed_array.timeline.shape[0] == 6
-    np.testing.assert_array_equal(
-        indexed_array.timeline, np.array([timeline_should_be])
-    )
+    assert isinstance(timeline_should_be, Timeline)
+    np.testing.assert_array_equal(indexed_array.timeline, timeline_should_be)
+
+
+def test_sorting_array_indexing(timelined_array_3D: TimelinedArray):
+
+    sort_index = [12, 34, 45, 34]
+
+    indexed_array = timelined_array_3D[:, sort_index, :]
+    assert indexed_array.timeline.tolist() == sort_index  # ty: ignore[unresolved-attribute]
+    normal_indexed_array = timelined_array_3D.__array__()[:, sort_index, :]
+    np.testing.assert_array_equal(indexed_array[0, :, 0], normal_indexed_array[0, :, 0])

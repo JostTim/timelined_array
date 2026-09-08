@@ -1,5 +1,5 @@
-__version__ = "0.1.3"
-__all__ = ["MaskedTimelinedArray", "Timeline", "TimelinedArray"]
+__version__ = "1.0.1"
+__all__ = ["BaseTimeArray", "MaskedTimelinedArray", "Timeline", "TimelinedArray"]
 
 
-from .time import MaskedTimelinedArray, Timeline, TimelinedArray
+from .time import BaseTimeArray, MaskedTimelinedArray, Timeline, TimelinedArray

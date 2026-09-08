@@ -37,7 +37,7 @@ ignore = ["B010", "PIE796"]
 "tests/*" = ["B018"]
 
 [tool.pytest.ini_options]
-addopts = "-ra -s -q --pdbcls=IPython.terminal.debugger:TerminalPdb --cov-report xml --cov=timelined_array --junitxml=pytest_results.xml --cov-config=pyproject.toml"
+addopts = "-ra -q --pdbcls=IPython.terminal.debugger:TerminalPdb --cov-report xml --cov=timelined_array --junitxml=pytest_results.xml --cov-config=pyproject.toml"
 testpaths = ["tests"]
 
 [tool.coverage.run]

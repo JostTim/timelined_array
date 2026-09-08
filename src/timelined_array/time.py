@@ -13,32 +13,10 @@ from numpy.typing import NDArray
 
 logger = getLogger("timelined_array")
 
-
-# class TimeCompatibleProtocol(Protocol):
-#     time_dimension: int
-#     timeline: "Timeline"
-
-#     def __getitem__(self, index) -> np.ndarray: ...
-
-#     def __array__(self) -> np.ndarray: ...
-
-#     @property
-#     def shape(self) -> tuple[int, ...]: ...
-
-#     @property
-#     def ndim(self) -> int: ...
-
-#     @property
-#     def itime(self) -> "TimeIndexer": ...
-
-#     def _get_array_cls(self) -> "type": ...
-
-#     def transpose(self): ...
-
 type PointTimeIndex = float
-type SimpleTimeIndexer = slice | tuple[float | None, ...]
-type ComplexTimeIndexer = list[float | bool] | npt.NDArray[np.floating | np.bool]
-type TimeIndexer = PointTimeIndex | SimpleTimeIndexer | ComplexTimeIndexer
+type SimpleTimeIndex = slice | tuple[float | None, ...]
+type ComplexTimeIndex = list[float | bool] | npt.NDArray[np.floating | np.bool]
+type TimeIndex = PointTimeIndex | SimpleTimeIndex | ComplexTimeIndex
 
 all_axes: Final[None] = None
 type AxisDesignation = int | tuple[int, ...] | all_axes
@@ -237,13 +215,13 @@ class TimeIndexer[A: "BaseTimeArray"]:
     def time_to_index(self, time: PointTimeIndex) -> int: ...
 
     @overload
-    def time_to_index(self, time: SimpleTimeIndexer) -> slice[int, int, int]: ...
+    def time_to_index(self, time: SimpleTimeIndex) -> slice[int, int, int]: ...
 
     @overload
-    def time_to_index(self, time: ComplexTimeIndexer) -> npt.NDArray[np.integer]: ...
+    def time_to_index(self, time: ComplexTimeIndex) -> npt.NDArray[np.integer]: ...
 
     def time_to_index(
-        self, time: TimeIndexer
+        self, time: TimeIndex
     ) -> int | slice[int, int, int] | npt.NDArray[np.integer]:
         """Converts time to index with methods based on the different input types.
 
@@ -320,9 +298,9 @@ class TimeIndexer[A: "BaseTimeArray"]:
     def __getitem__(self, index: PointTimeIndex) -> float: ...
 
     @overload
-    def __getitem__(self, index: SimpleTimeIndexer | ComplexTimeIndexer) -> A: ...
+    def __getitem__(self, index: SimpleTimeIndex | ComplexTimeIndex) -> A: ...
 
-    def __getitem__(self, index: TimeIndexer) -> A | float:
+    def __getitem__(self, index: TimeIndex) -> A | float:
         """Get item from TimelinedArray, MaskedTimelinedArray, or np.ndarray based on the given index.
 
         Args:
@@ -523,7 +501,7 @@ class CropManager:
         # first, if there is newwaxes, we shift the time_dimension upwards
         l_time_attrs = self.expand_new_axes(index, time_attrs)
 
-        if len(index) >= l_time_attrs.time_dimension:
+        if len(index) > l_time_attrs.time_dimension:
             l_time_attrs = self.apply_index_to_time_attrs(
                 index[l_time_attrs.time_dimension], l_time_attrs
             )
@@ -927,7 +905,12 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
 
     def __getitem__(
         self: Self,
-        index: None | int | slice | tuple[int | None | slice, ...] | list | np.ndarray,
+        index: None
+        | int
+        | slice
+        | tuple[int | None | slice | npt.NDArray, ...]
+        | list
+        | npt.NDArray,
     ) -> Self | npt.NDArray:
         """Get item from TimelinedArray based on index or slice.
 

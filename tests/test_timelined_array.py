@@ -1,7 +1,10 @@
 import numpy as np
 import pytest
 
-from tests.conftest import ARRAY_SHAPE_1D, TIME_AXIS_1D
+from tests.conftest import (
+    ARRAY_SHAPE_1D,
+    TIME_AXIS_1D,
+)
 from timelined_array import TimelinedArray
 from timelined_array.time import (
     EndEdgePolicy,
@@ -94,11 +97,6 @@ def test_time_mixin_methods(timelined_array_1D: TimelinedArray):
     assert timelined_array_1D.min_time() == 0
 
 
-# def test_seconds_to_index():
-#     time_unit = TimeUnit(10)
-#     assert time_unit.to_index(2) == 20
-
-
 def test_rebase_timelined_array(timelined_array_1D: TimelinedArray):
 
     array = timelined_array_1D.rebase_timeline(at=16)
@@ -110,14 +108,28 @@ def test_offset_timeline(timelined_array_1D: TimelinedArray):
     assert array.timeline[22] == (22 + 84)
 
 
-# def test_shift_period(timelined_array_1D: TimelinedArray):
-
-#     with pytest.raises(NotImplementedError):
-#         timelined_array_1D.shift_values(period=slice(8, 10))
-
-
 def test_pack(timelined_array_1D: TimelinedArray):
 
     timeline, array = timelined_array_1D.pack
     assert timeline is timelined_array_1D.timeline
     assert np.all(array == timelined_array_1D)
+
+
+def test_iteration(timelined_array_3D: TimelinedArray):
+    # iteration should behave like a plain numpy array (iterate over first axis)
+    items = list(timelined_array_3D)
+    assert len(items) == AX0_SIZE_3D
+    for item in items:
+        assert item.shape == (AX1_SIZE_3D, AX2_SIZE_3D)
+        # time axis (1) becomes axis 0 of the item, timeline stays attached
+        assert isinstance(item, TimelinedArray)
+        assert item.time_dimension == 0
+        assert np.array_equal(item.timeline, timelined_array_3D.timeline)
+
+
+def test_iteration_when_time_axis_is_first(timelined_array_1D: TimelinedArray):
+    # when the iterated axis IS the time axis, yielded items carry no timeline
+    items = list(timelined_array_1D)
+    assert len(items) == TIME_AXIS_SIZE_1D
+    for item in items:
+        assert not isinstance(item, TimelinedArray)

@@ -172,8 +172,6 @@ def test_ta3D_swapaxes(timelined_array_3D: TimelinedArray):
 def test_timelined_array_from_iterable(timelined_array_3D: TimelinedArray):
     assert timelined_array_3D.timeline.min() == 0
     assert timelined_array_3D.timeline.max() == TIME_AXIS_SIZE_3D - 1
-    for item in timelined_array_3D:
-        print(item)
 
     array = TimelinedArray.align_from_iterable(timelined_array_3D)
     assert np.all(array == timelined_array_3D)

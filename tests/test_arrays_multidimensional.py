@@ -1,5 +1,5 @@
+from collections.abc import Generator
 from functools import partial
-from types import GeneratorType
 from typing import Protocol, cast
 
 import numpy as np
@@ -35,7 +35,7 @@ def get_axis_parameters_3D():
 
 def yield_numpy_function_alternatives(
     array: TimelinedArray, function_name: str
-) -> GeneratorType[NumpyAggFunction]:
+) -> Generator[NumpyAggFunction]:
     yield partial(getattr(np, function_name), array)
     yield getattr(array, function_name)
 

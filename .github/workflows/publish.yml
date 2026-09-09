@@ -1,13 +1,20 @@
 
-name: Publish
+name: Publish Release
 on: 
-  push:
-    branches:
-      - main
+    push:
+        tags:
+          - "v**"
+          # Run on push of tags starting with v***
+
+    workflow_run:
+        workflows: ["Run Tests"]
+        branches: [main]
+        types: 
+          - completed
 
 jobs:
     pypi-publish:
-        name: upload release to PyPI
+        name: Upload Release to PyPI
         runs-on: ubuntu-latest
         
         permissions:
@@ -25,5 +32,41 @@ jobs:
           - name: Build Distribution
             run: uv build
 
-          - name: Publish package distributions to PyPI
+          - name: Publish Package Distributions to PyPI
             run: uv publish
+
+          - name : Upload Files For Next Job
+            uses: actions/upload-artifact@v7
+            with:
+              name: release-files
+              path: dist/**
+                !dist/.gitignore
+          
+
+    release-on-github:
+        name: Release on Hithub
+        needs: pypi-publish
+        runs-on: ubuntu-latest
+
+        steps : 
+          - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+          - name: Get Artifacts From Last Job
+            uses: actions/download-artifact@v8
+            with:
+              name: release-files
+              path: dist
+
+          - name: Get Asset name
+            run: |
+              export PKG=$(ls dist/)
+              set -- $PKG
+              echo "name=$1" >> $GITHUB_ENV
+
+          - name: Upload Release Asset (sdist) to GitHub
+            uses: softprops/action-gh-release@v3
+            if: github.ref_type == 'tag'
+            with:
+              files: |
+                dist/**
+

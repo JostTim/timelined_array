@@ -215,14 +215,12 @@ class TimeIndexer[A: "BaseTimeArray"]:
     def time_to_index(self, time: PointTimeIndex) -> int: ...
 
     @overload
-    def time_to_index(self, time: SimpleTimeIndex) -> slice[int, int, int]: ...
+    def time_to_index(self, time: SimpleTimeIndex) -> slice: ...
 
     @overload
     def time_to_index(self, time: ComplexTimeIndex) -> npt.NDArray[np.integer]: ...
 
-    def time_to_index(
-        self, time: TimeIndex
-    ) -> int | slice[int, int, int] | npt.NDArray[np.integer]:
+    def time_to_index(self, time: TimeIndex) -> int | slice | npt.NDArray[np.integer]:
         """Converts time to index with methods based on the different input types.
 
         Args:
@@ -271,9 +269,9 @@ class TimeIndexer[A: "BaseTimeArray"]:
 
     seconds_to_index = time_to_index
 
-    def insert_time_index_into_full_index[T: int | slice[int, int, int] | np.ndarray](
+    def insert_time_index_into_full_index[T: "int | slice | np.ndarray"](
         self, time_index: T
-    ) -> tuple[slice[None] | T, ...]:
+    ) -> tuple[slice | T, ...]:
         """Inserts a time index into the full index.
         Becauer Time indexer is supposed to work only on the time
         dimension, the indexing of the rest of the dimensions is made only of
@@ -286,7 +284,7 @@ class TimeIndexer[A: "BaseTimeArray"]:
             tuple: The full index with the time index inserted.
         """
         # first we get a list of [slice(None), ...] as much times as there is dimensions
-        full_index: list[slice[None] | T] = [slice(None)] * len(self.array.shape)
+        full_index: list[slice | T] = [slice(None)] * len(self.array.shape)
 
         # then we put the integer value at the position of time index at
         # the right position (time_dimension) in the tuple of all sliced dimensions
@@ -390,7 +388,7 @@ class TimeIndexer[A: "BaseTimeArray"]:
         time_start: float | None = None,
         time_stop: float | None = None,
         time_step: float | None = None,
-    ) -> slice[int, int, int]:
+    ) -> slice:
         """Get the index range based on the given start, stop, and step values in seconds.
 
         Args:

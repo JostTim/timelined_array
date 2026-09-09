@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-## [1.0.6] - 2026-09-09
+## [1.0.7] - 2026-09-09
 
 This version has breaking changes in relation to the previous 0.x versions (removed legacy namings such as TA_Timeline, etc...)
 

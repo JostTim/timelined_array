@@ -69,11 +69,27 @@ jobs:
           - name: Extract changelog section for this release
             run: |
               VERSION="${GITHUB_REF_NAME#v}"
+              echo "version=$VERSION" >> $GITHUB_ENV
+              {
+                echo "## Install"
+                echo ""
+                echo "with pip"
+                echo '```bash'
+                echo "pip install timelined-array==$VERSION"
+                echo '```'
+                echo ""
+                echo "or with uv :"
+                echo '```bash'
+                echo "uv add timelined-array==$VERSION"
+                echo '```'
+                echo ""
+                echo "📦 [View on PyPI](https://pypi.org/project/timelined-array/$VERSION/)"
+              } > release_notes.md
               awk -v ver="[$VERSION]" '
                 index($0, "## " ver) == 1 {flag=1; next}
                 /^## \[/ {flag=0}
                 flag
-              ' CHANGELOG.md > release_notes.md
+              ' CHANGELOG.md >> release_notes.md
 
           - name: Upload Release Asset (sdist) to GitHub
             uses: softprops/action-gh-release@v3
@@ -81,18 +97,4 @@ jobs:
               files: |
                 dist/**
               body_path: release_notes.md
-            generate_release_notes: true
-            body: |
-              ## Install
-              with pip
-              ```bash
-              pip install timelined-array==${{ env.version }}
-              ```
-              or with uv :
-              ```bash
-              uv add timelined-array==${{ env.version }}
-              ```
-
-              📦 [View on PyPI](https://pypi.org/project/timelined-array/${{ env.version }}/)
-              
-
+              generate_release_notes: true

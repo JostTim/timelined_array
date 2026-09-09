@@ -251,7 +251,7 @@ wheels = [
 
 [[package]]
 name = "timelined-array"
-version = "0.1.3"
+version = "1.0.6"
 source = { editable = "." }
 dependencies = [
     { name = "numpy" },

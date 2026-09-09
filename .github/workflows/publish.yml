@@ -33,6 +33,7 @@ jobs:
             run: uv build
 
           - name: Publish Package Distributions to PyPI
+            if: ${{ !env.ACT }}
             run: uv publish
 
           - name : Upload Files For Next Job

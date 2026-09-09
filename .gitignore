@@ -164,3 +164,4 @@ cython_debug/
 pytest_results.xml
 
 *.actrc
+event.json

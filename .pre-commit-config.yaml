@@ -11,7 +11,7 @@ repos:
 
       - id: tag-version
         name: Tag HEAD with committed version
-        entry: powershell -Command "if (-not (git tag -l ('v' + (uv tool run bump-my-version show current_version)))) { git tag ('v' + (uv tool run bump-my-version show current_version)) }"
+        entry: powershell -Command "if ((git log -1 --pretty=%B) -match '\[release\]' -and -not (git tag -l ('v' + (uv tool run bump-my-version show current_version)))) { git tag ('v' + (uv tool run bump-my-version show current_version)) }"
         language: system
         always_run: true
         pass_filenames: false

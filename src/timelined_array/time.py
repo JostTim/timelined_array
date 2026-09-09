@@ -233,10 +233,12 @@ class TimeIndexer[A: "BaseTimeArray"]:
         Raises:
             ValueError: If the input time type is not supported.
         """
-        # argument index may be a slice or a scalar. Units of index should be in second. Returns a slice as index
-        # this is sort of a wrapper for get_time_slice that does the heavy lifting.
+        # argument index may be a slice or a scalar. Units of index should be in your time unit.
+        # Returns a slice as index
+        # this is sort of a wrapper for the different types of indices objects,
+        # around get_time_slice that does the heavy lifting.
         # this function just makes sure to pass arguments to it corectly depending
-        # on if the time index is a single value or a slice.
+        # on the according index object type.
 
         if isinstance(time, slice):
             # if we get a slice of times, we return a slice of indices
@@ -266,8 +268,6 @@ class TimeIndexer[A: "BaseTimeArray"]:
     @property
     def max_step(self) -> np.floating:
         return abs(self.array.timeline.max_step)
-
-    seconds_to_index = time_to_index
 
     def insert_time_index_into_full_index[T: "int | slice | np.ndarray"](
         self, time_index: T
@@ -316,7 +316,8 @@ class TimeIndexer[A: "BaseTimeArray"]:
         if hasattr(index, "__iter__"):
             # if not isinstance(index,(int,float,slice,np.integer,np.floating)):
             raise ValueError(
-                "Isec allow only indexing on time dimension. Index must be either int, float or slice, not iterable"
+                "TimeIndexer only allows indexing on time dimension. "
+                "Index must be either int, float or slice, not iterable"
             )
 
         index_time = self.time_to_index(index)
@@ -389,12 +390,12 @@ class TimeIndexer[A: "BaseTimeArray"]:
         time_stop: float | None = None,
         time_step: float | None = None,
     ) -> slice:
-        """Get the index range based on the given start, stop, and step values in seconds.
+        """Get the index range based on the given start, stop, and step values in time unit.
 
         Args:
-            sec_start (float): The start time, in your time units. If None, start index will be  will be set to the first point of the timeline (0).
-            sec_stop (float): The stop time, in your time units. If None, the stop index will be set to the final point of the timeline.
-            sec_step (float): The step size, in your time units. If None, the index step size will be 1.
+            time_start (float): The start time, in your time units. If None, start index will be  will be set to the first point of the timeline (0).
+            time_stop (float): The stop time, in your time units. If None, the stop index will be set to the final point of the timeline.
+            time_step (float): The step size, in your time units. If None, the index step size will be 1.
 
         Returns:
             slice: A slice object representing the index range based on the given start, stop, and step values.
@@ -767,14 +768,14 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
         aligned_arrays = [item.align_trace(start, maxlen) for item in iterable]
         return cls(aligned_arrays)
 
-    def max_time(self) -> float:  # was sec_max
-        """Return the second maximum time from the timeline."""
+    def max_time(self) -> float:
+        """Return the maximum time (in time units) from the timeline."""
 
         # get maximum time
         return self.timeline.max()
 
-    def min_time(self) -> float:  # was sec_min
-        """Get the minimum time from the timeline."""
+    def min_time(self) -> float:
+        """Get the minimum time (in time units) from the timeline."""
 
         # get minimum time
         return self.timeline.min()
@@ -1236,8 +1237,8 @@ class TimelinedArray(BaseTimeArray):
         timeline_step: This method returns the average time difference between each consecutive value in the timeline.
 
     TimelinedArrayIndexer class, which has several methods, including:
-        time_to_index: This method converts time in seconds to index value.
-        get_time_slice: This method converts time in seconds to a slice object representing time.
+        time_to_index: This method converts time in time units, to integer index value.
+        get_time_slice: This method converts time in time units, to an integer slice object representing time.
 
     __new__ : This method is used to creates a new instance of the TimelinedArray class. It takes several optional
         arguments: timeline, time_dimension, arange_timeline, and timeline_is_arranged.

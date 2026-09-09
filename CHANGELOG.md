@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-## [1.0.8] - 2026-09-09
+## [1.0.9] - 2026-09-09
 
 This version has breaking changes in relation to the previous 0.x versions (removed legacy namings such as TA_Timeline, etc...)
 
@@ -29,6 +29,11 @@ This version has breaking changes in relation to the previous 0.x versions (remo
 - `rollaxis` behavior
 - Array wrap after deprecation when used without `return_scalar` as positional argument
 - Compatibility with numpy 2.*
+
+### Removed
+- All references to seconds in docstrings and function names have been changes for a more general "time" or "time unit" reference.
+The unit that the timeline references is up to the user to make sense of. 
+It can represent days, hours, seconds... It will still be a floating point number.
 
 ## [0.1.0] - 2024-06-03
 

@@ -42,10 +42,10 @@ jobs:
               name: release-files
               path: dist/**
                 !dist/.gitignore
-          
+              retention-days: 1
 
     release-on-github:
-        name: Release on Hithub
+        name: Release on Github
         needs: pypi-publish
         runs-on: ubuntu-latest
 
@@ -53,7 +53,7 @@ jobs:
           - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
           - name: Get Artifacts From Last Job
-            uses: actions/download-artifact@v8
+            uses: actions/download-artifact@v7
             with:
               name: release-files
               path: dist
@@ -70,4 +70,18 @@ jobs:
             with:
               files: |
                 dist/**
+            generate_release_notes: true
+            body: |
+              ## Install
+              with pip
+              ```bash
+              pip install timelined-array==${{ env.version }}
+              ```
+              or with uv :
+              ```bash
+              uv add timelined-array==${{ env.version }}
+              ```
+
+              📦 [View on PyPI](https://pypi.org/project/timelined-array/${{ env.version }}/)
+              
 

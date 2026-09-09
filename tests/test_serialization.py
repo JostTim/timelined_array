@@ -13,9 +13,7 @@ def pickle_path(tmp_path: Path):
     yield file_path
 
 
-@pytest.mark.filterwarnings(
-    "ignore:FutureWarning: We do not yet support timeline management"
-)
+@pytest.mark.filterwarnings("ignore:FutureWarning")
 def test_pickle_unpickle(timelined_array_3D: TimelinedArray, pickle_path):
     # Pickle the numpy array
     with open(pickle_path, "wb") as f:

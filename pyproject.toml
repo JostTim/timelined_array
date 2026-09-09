@@ -4,7 +4,7 @@ description = "Manage easily 1 or multidimensionnal samples numpy arrays that ar
 authors = [
     { name = "Timothe Jost", email = "44769559+JostTim@users.noreply.github.com" },
 ]
-version = "1.0.7"
+version = "1.0.8"
 dependencies = ["numpy>=2"]
 requires-python = ">=3.12"
 readme = "README.md"
@@ -45,7 +45,7 @@ testpaths = ["tests"]
 omit = [".vscode/*", ".tests/*"]
 
 [tool.bumpversion]
-current_version = "1.0.7"
+current_version = "1.0.8"
 parse = "(?P<major>\\d+)\\.(?P<minor>\\d+)\\.(?P<patch>\\d+)"
 serialize = ["{major}.{minor}.{patch}"]
 search = "{current_version}"

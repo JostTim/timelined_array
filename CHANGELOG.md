@@ -7,7 +7,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
-## [1.1.4] - 2026-10-21
+## [1.1.5] - 2026-10-21
 
 Update to add a tiny agents.md file to guide agents workflow.
 

@@ -374,7 +374,10 @@ class TimeIndexer[A: "BaseTimeArray"]:
             # use : (wich is equivalent to None in the slice.stop object)
             stop = len(self.array.timeline)
 
-        self.check_step_size_below_maximum(stop, time_stop)
+        # we make stop - 1 here because : array[3:5] for an array of size 5 is allowed,
+        # but array[5] for an array of size 5 is not, and hence, yould raise an error.
+        # (on top of the value being wrong by one element for any non terminal value)
+        self.check_step_size_below_maximum(stop - 1, time_stop)
         return stop
 
     def get_step_index(self, time_step: float | None) -> int:

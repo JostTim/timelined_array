@@ -7,6 +7,10 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+## [1.1.7] - 2026-11-09
+
+Hotfix patch to correct an error in which the line here : [time.py#L377](https://github.com/JostTim/timelined_array/blob/d43d72ca230ca7f5b90d9856848ba5bc1b58011c/src/timelined_array/time.py#L377) causes a bug when indexing the values of a timelined array, for the very last index possible. (The bug origin, wich is a typo, is explained and fixed with a comment to explain the reason of the addition of a `-1` operation).
+
 ## [1.1.5] - 2026-10-21
 
 Update to add a tiny agents.md file to guide agents workflow.

@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Unreleased]
 
+- Changed pyproject toml `ty`.`rules` `invalid-method-override` to `incompatible-method-override` (as per ty upgrade changing the names of the rules, deprecating many of them)
+
 ## [1.1.8] - 2026-11-25
 
 Adding `duration` as an utility method on BaseTimeArray (TimelinedArrays and MaskedTimelinedArrays benefit from it identically). It allows to get the total duration, in time units, of the array, regardless of start offsets.

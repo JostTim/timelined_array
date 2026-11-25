@@ -774,14 +774,15 @@ class BaseTimeArray(np.ndarray):  # All time arrays are numpy arrays
     def max_time(self) -> float:
         """Return the maximum time (in time units) from the timeline."""
 
-        # get maximum time
-        return self.timeline.max()
+        return float(self.timeline.max())
 
     def min_time(self) -> float:
         """Get the minimum time (in time units) from the timeline."""
 
-        # get minimum time
-        return self.timeline.min()
+        return float(self.timeline.min())
+
+    def duration(self) -> float:
+        return self.max_time() - self.min_time()
 
     def rebase_timeline(self: Self, at: float = 0.0) -> Self:
         """Rebases the timeline of the array.
